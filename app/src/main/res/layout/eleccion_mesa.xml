@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/eleccionmesa"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".eleccionMesa">
+
+
+    <ImageView
+        android:id="@+id/logo"
+        android:layout_width="336dp"
+        android:layout_height="215dp"
+        app:srcCompat="@mipmap/elipse3"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="77dp"
+        tools:layout_editor_absoluteY="-44dp" />
+
+
+    <TextView
+        android:layout_width="173dp"
+        android:layout_height="75dp"
+        android:text="Selecciona una mesa"
+        android:textAlignment="textEnd"
+        android:textColor="@color/black"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="195dp"
+        tools:layout_editor_absoluteY="16dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="343dp"
+        android:layout_height="80dp"
+        android:background="@drawable/background_primary"
+        android:text="MESA 1"
+        android:orientation="horizontal"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="30dp"
+        tools:layout_editor_absoluteY="191dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="343dp"
+        android:layout_height="80dp"
+        android:background="@drawable/background_primary"
+        android:text="MESA 2"
+        android:orientation="horizontal"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="30dp"
+        tools:layout_editor_absoluteY="288dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="343dp"
+        android:layout_height="80dp"
+        android:background="@drawable/background_primary"
+        android:text="MESA 3"
+        android:orientation="horizontal"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="30dp"
+        tools:layout_editor_absoluteY="386dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="343dp"
+        android:layout_height="80dp"
+        android:background="@drawable/background_ter"
+        android:text="MESA 4"
+        android:orientation="horizontal"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="30dp"
+        tools:layout_editor_absoluteY="485dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:layout_width="343dp"
+        android:layout_height="80dp"
+        android:background="@drawable/background_ter"
+        android:text="MESA 5"
+        android:orientation="horizontal"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="30dp"
+        tools:layout_editor_absoluteY="584dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
