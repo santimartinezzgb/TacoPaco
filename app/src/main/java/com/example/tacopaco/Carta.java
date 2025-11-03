@@ -2,6 +2,7 @@ package com.example.tacopaco;
 
 import static com.example.tacopaco.R.*;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -26,8 +27,10 @@ public class Carta extends AppCompatActivity {
             return insets;
         });
 
-        Button tacos = findViewById(R.id.tacos);
+        Button tacos = findViewById(R.id.volver);
         tacos.setOnClickListener(v -> {
+            Intent intent = new Intent(Carta.this, EleccionMesa.class);
+            startActivity(intent);
 
         });
 
