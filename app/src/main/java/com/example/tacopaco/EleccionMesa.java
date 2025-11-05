@@ -32,8 +32,6 @@ public class EleccionMesa extends AppCompatActivity {
         Button boton_volver = findViewById(R.id.volver);
         Button boton_mesa1 = findViewById(R.id.mesa1);
 
-        Mesa mesa1 = new Mesa("Mesa1", false);
-
         Api api = RetrofitClient.getInstance().getApi();
 
         boton_volver.setOnClickListener(v -> {
@@ -42,16 +40,17 @@ public class EleccionMesa extends AppCompatActivity {
         });
 
         boton_mesa1.setOnClickListener(v -> {
+            Mesa mesa1 = new Mesa("Mesa1", true); // 👈 true aquí
 
-            Call<Mesa> call = api.ocuparMesa("mesa1", mesa1);
-            mesa1.ocupada = true;
+            Call<Mesa> call = api.ocuparMesa("Mesa1", mesa1);
+
             call.enqueue(new Callback<Mesa>() {
                 @Override
                 public void onResponse(Call<Mesa> call, Response<Mesa> response) {
                     if (response.isSuccessful()) {
-                        System.out.println("Mesa ocupada correctamente");
+                        System.out.println("✅ Mesa ocupada correctamente");
                     } else {
-                        System.out.println("Error al ocupar la mesa: " + response.code());
+                        System.out.println("⚠️ Error al ocupar la mesa: " + response.code());
                     }
                 }
 
@@ -64,6 +63,7 @@ public class EleccionMesa extends AppCompatActivity {
             Intent intent = new Intent(EleccionMesa.this, Carta.class);
             startActivity(intent);
         });
+
 
     }
 }
