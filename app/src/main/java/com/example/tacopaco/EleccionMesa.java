@@ -31,16 +31,8 @@ public class EleccionMesa extends AppCompatActivity {
         @SuppressLint({"MissingInflatedId", "LocalSuppress"})
         Button boton_volver = findViewById(R.id.volver);
         Button boton_mesa1 = findViewById(R.id.mesa1);
-        Button boton_mesa2 = findViewById(R.id.mesa2);
-        Button boton_mesa3 = findViewById(R.id.mesa3);
-        Button boton_mesa4 = findViewById(R.id.mesa4);
-        Button boton_mesa5 = findViewById(R.id.mesa5);
 
         Mesa mesa1 = new Mesa("Mesa1", false);
-        Mesa mesa2 = new Mesa("Mesa2", false);
-        Mesa mesa3 = new Mesa("mesa3", false);
-        Mesa mesa4 = new Mesa("mesa4", false);
-        Mesa mesa5 = new Mesa("mesa5", false);
 
         Api api = RetrofitClient.getInstance().getApi();
 
