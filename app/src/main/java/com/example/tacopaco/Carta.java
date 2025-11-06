@@ -35,45 +35,117 @@ public class Carta extends AppCompatActivity {
         tacos.setOnClickListener(v -> {
             Intent intent = new Intent(Carta.this, EleccionMesa.class);
             startActivity(intent);
-
         });
 
-        @SuppressLint({"MissingInflatedId", "LocalSuppress"})
-        Button sumarTacos = findViewById(R.id.sumarTacos);
-        @SuppressLint({"MissingInflatedId", "LocalSuppress"})
-        Button restarTacos = findViewById(id.restarTacos);
-        @SuppressLint({"WrongViewCast", "MissingInflatedId", "LocalSuppress"})
-        TextView cantidadTacos = findViewById(R.id.cantidadTacos);
-        @SuppressLint({"MissingInflatedId", "LocalSuppress"})
         Button pagar = findViewById(R.id.pagar);
+        Button cancelar = findViewById(id.cancelar);
 
-        ArrayList cuentaTotal = new ArrayList<>();
+        // Precios unitarios de cada producto
+        double precioTacos = 7.99;
+        double precioNachos = 6.99;
+        double precioQuesadillas = 6.50;
+        double precioTamales = 7.50;
+        double precioBurritos = 9.99;
 
-        // AtomicInteger para manejar la cantidad de tacos en una sola variable
-        AtomicInteger cantidad = new AtomicInteger(Integer.parseInt(cantidadTacos.getText().toString()));
-        if(cantidad==0){
-           pagar.getVisibility() ;
-        }
+        // Botones de sumar y restar productos
+        Button sumarTacos = findViewById(R.id.sumarTacos);
+        Button sumarNachos = findViewById(R.id.sumarNachos);
+        Button sumarQuesadillas = findViewById(R.id.sumarQuesadillas);
+        Button sumarTamal = findViewById(R.id.sumarTamal);
+        Button sumarBurrito = findViewById(R.id.sumarBurrito);
 
-        sumarTacos.setOnClickListener(v -> {;
-            cantidad.getAndIncrement();
-            cantidadTacos.setText(String.valueOf(cantidad.get()));
+        Button restarTacos = findViewById(id.restarTacos);
+        Button restarNachos = findViewById(id.restarNachos);
+        Button restarQuesadillas = findViewById(id.restarQuesadillas);
+        Button restarTamal = findViewById(id.restarTamal);
+        Button restarBurrito = findViewById(id.restarBurrito);
+
+        // Cantidad productos
+        TextView cantidadTacos = findViewById(R.id.cantidadTacos);
+        TextView cantidadNachos = findViewById(R.id.cantidadNachos);
+        TextView cantidadQuesadillas = findViewById(R.id.cantidadQuesadillas);
+        TextView cantidadTamal = findViewById(R.id.cantidadTamal);
+        TextView cantidadBurrito = findViewById(R.id.cantidadBurrito);
+
+        // Cantidades
+        AtomicInteger totalTacos = new AtomicInteger(Integer.parseInt(cantidadTacos.getText().toString()));
+        AtomicInteger totalNachos = new AtomicInteger(Integer.parseInt(cantidadNachos.getText().toString()));
+        AtomicInteger totalQuesadillas = new AtomicInteger(Integer.parseInt(cantidadQuesadillas.getText().toString()));
+        AtomicInteger totalTamales = new AtomicInteger(Integer.parseInt(cantidadTamal.getText().toString()));
+        AtomicInteger totalBurritos = new AtomicInteger(Integer.parseInt(cantidadBurrito.getText().toString()));
+
+        // Eventos sumar/restar productos
+        sumarTacos.setOnClickListener(v -> {
+            totalTacos.getAndIncrement();
+            cantidadTacos.setText(String.valueOf(totalTacos.get()));
         });
         restarTacos.setOnClickListener(v -> {
-            if (cantidad.get() > 0) {
-                cantidad.getAndDecrement();
-                cantidadTacos.setText(String.valueOf(cantidad.get()));
+            if (totalTacos.get() > 0) {
+                totalTacos.getAndDecrement();
+                cantidadTacos.setText(String.valueOf(totalTacos.get()));
             }
         });
 
+        sumarNachos.setOnClickListener(v -> {
+            totalNachos.getAndIncrement();
+            cantidadNachos.setText(String.valueOf(totalNachos.get()));
+        });
+        restarNachos.setOnClickListener(v -> {
+            if (totalNachos.get() > 0) {
+                totalNachos.getAndDecrement();
+                cantidadNachos.setText(String.valueOf(totalNachos.get()));
+            }
+        });
+
+        sumarQuesadillas.setOnClickListener(v -> {
+            totalQuesadillas.getAndIncrement();
+            cantidadQuesadillas.setText(String.valueOf(totalQuesadillas.get()));
+        });
+        restarQuesadillas.setOnClickListener(v -> {
+            if (totalQuesadillas.get() > 0) {
+                totalQuesadillas.getAndDecrement();
+                cantidadQuesadillas.setText(String.valueOf(totalQuesadillas.get()));
+            }
+        });
+
+        sumarTamal.setOnClickListener(v -> {
+            totalTamales.getAndIncrement();
+            cantidadTamal.setText(String.valueOf(totalTamales.get()));
+        });
+        restarTamal.setOnClickListener(v -> {
+            if (totalTamales.get() > 0) {
+                totalTamales.getAndDecrement();
+                cantidadTamal.setText(String.valueOf(totalTamales.get()));
+            }
+        });
+
+        sumarBurrito.setOnClickListener(v -> {
+            totalBurritos.getAndIncrement();
+            cantidadBurrito.setText(String.valueOf(totalBurritos.get()));
+        });
+        restarBurrito.setOnClickListener(v -> {
+            if (totalBurritos.get() > 0) {
+                totalBurritos.getAndDecrement();
+                cantidadBurrito.setText(String.valueOf(totalBurritos.get()));
+            }
+        });
+
+        // Calcular total a pagar
         pagar.setOnClickListener(v -> {
-            double cantidadTotalTacos = Integer.parseInt(String.valueOf(cantidadTacos)) * 7.99;
-            cuentaTotal.add(cantidadTotalTacos);
+            double total = (totalTacos.get() * precioTacos) +
+                    (totalNachos.get() * precioNachos) +
+                    (totalQuesadillas.get() * precioQuesadillas) +
+                    (totalTamales.get() * precioTamales) +
+                    (totalBurritos.get() * precioBurritos);
 
             Intent intent = new Intent(Carta.this, EleccionMesa.class);
             startActivity(intent);
         });
 
+        cancelar.setOnClickListener(v -> {
 
+            Intent cancelar_y_volver = new Intent(Carta.this, EleccionMesa.class);
+            startActivity(cancelar_y_volver);
+        });
     }
 }
