@@ -1,9 +1,7 @@
 package com.example.tacopaco;
 
-import static android.view.View.GONE;
 import static com.example.tacopaco.R.*;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -16,8 +14,12 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class Carta extends AppCompatActivity {
 
@@ -48,7 +50,7 @@ public class Carta extends AppCompatActivity {
         double precioTamales = 7.50;
         double precioBurritos = 9.99;
 
-        @SuppressLint({"MissingInflatedId", "LocalSuppress"}) TextView precio = findViewById(R.id.precio);
+        TextView precio = findViewById(R.id.precio);
 
         // Botones de sumar y restar productos
         Button sumarTacos = findViewById(R.id.sumarTacos);
@@ -70,82 +72,147 @@ public class Carta extends AppCompatActivity {
         TextView cantidadTamal = findViewById(R.id.cantidadTamal);
         TextView cantidadBurrito = findViewById(R.id.cantidadBurrito);
 
+        // Inicializar cantidades a 0
+        cantidadTacos.setText("0");
+        cantidadNachos.setText("0");
+        cantidadQuesadillas.setText("0");
+        cantidadTamal.setText("0");
+        cantidadBurrito.setText("0");
+
         // Cantidades
-        AtomicInteger totalTacos = new AtomicInteger(Integer.parseInt(cantidadTacos.getText().toString()));
-        AtomicInteger totalNachos = new AtomicInteger(Integer.parseInt(cantidadNachos.getText().toString()));
-        AtomicInteger totalQuesadillas = new AtomicInteger(Integer.parseInt(cantidadQuesadillas.getText().toString()));
-        AtomicInteger totalTamales = new AtomicInteger(Integer.parseInt(cantidadTamal.getText().toString()));
-        AtomicInteger totalBurritos = new AtomicInteger(Integer.parseInt(cantidadBurrito.getText().toString()));
+        AtomicInteger totalTacos = new AtomicInteger();
+        AtomicInteger totalNachos = new AtomicInteger();
+        AtomicInteger totalQuesadillas = new AtomicInteger();
+        AtomicInteger totalTamales = new AtomicInteger();
+        AtomicInteger totalBurritos = new AtomicInteger();
+
+        // Función para actualizar el precio total (Runnable: interfaz para sincronizar una tarea/hilo)
+        AtomicReference<Double> totalActual = new AtomicReference<>(0.0);
+        Runnable actualizarTotal = () -> {
+            double total = (totalTacos.get() * precioTacos) +
+                    (totalNachos.get() * precioNachos) +
+                    (totalQuesadillas.get() * precioQuesadillas) +
+                    (totalTamales.get() * precioTamales) +
+                    (totalBurritos.get() * precioBurritos);
+            totalActual.set(total);
+            precio.setText(String.format("Precio: " + total +"€"));
+        };
 
         // Eventos sumar/restar productos
         sumarTacos.setOnClickListener(v -> {
-            totalTacos.getAndIncrement();
-            cantidadTacos.setText(String.valueOf(totalTacos.get()));
+            if (totalTacos.get() < 10) {
+                totalTacos.getAndIncrement();
+                cantidadTacos.setText(String.valueOf(totalTacos.get()));
+                actualizarTotal.run();
+            } else {
+                Toast.makeText(getApplicationContext(), "Cantidad máxima de tacos alcanzada", Toast.LENGTH_SHORT).show();
+            }
         });
         restarTacos.setOnClickListener(v -> {
             if (totalTacos.get() > 0) {
                 totalTacos.getAndDecrement();
                 cantidadTacos.setText(String.valueOf(totalTacos.get()));
+                actualizarTotal.run();
             }
         });
 
         sumarNachos.setOnClickListener(v -> {
-            totalNachos.getAndIncrement();
-            cantidadNachos.setText(String.valueOf(totalNachos.get()));
+            if (totalNachos.get() < 10) {
+                totalNachos.getAndIncrement();
+                cantidadNachos.setText(String.valueOf(totalNachos.get()));
+                actualizarTotal.run();
+            } else {
+                Toast.makeText(getApplicationContext(), "Cantidad máxima de nachos alcanzada", Toast.LENGTH_SHORT).show();
+            }
         });
         restarNachos.setOnClickListener(v -> {
             if (totalNachos.get() > 0) {
                 totalNachos.getAndDecrement();
                 cantidadNachos.setText(String.valueOf(totalNachos.get()));
+                actualizarTotal.run();
             }
         });
 
         sumarQuesadillas.setOnClickListener(v -> {
-            totalQuesadillas.getAndIncrement();
-            cantidadQuesadillas.setText(String.valueOf(totalQuesadillas.get()));
+            if (totalQuesadillas.get() < 10) {
+                totalQuesadillas.getAndIncrement();
+                cantidadQuesadillas.setText(String.valueOf(totalQuesadillas.get()));
+                actualizarTotal.run();
+            } else {
+                Toast.makeText(getApplicationContext(), "Cantidad máxima de quesadillas alcanzada", Toast.LENGTH_SHORT).show();
+            }
         });
         restarQuesadillas.setOnClickListener(v -> {
             if (totalQuesadillas.get() > 0) {
                 totalQuesadillas.getAndDecrement();
                 cantidadQuesadillas.setText(String.valueOf(totalQuesadillas.get()));
+                actualizarTotal.run();
             }
         });
 
         sumarTamal.setOnClickListener(v -> {
-            totalTamales.getAndIncrement();
-            cantidadTamal.setText(String.valueOf(totalTamales.get()));
+            if (totalTamales.get() < 10) {
+                totalTamales.getAndIncrement();
+                cantidadTamal.setText(String.valueOf(totalTamales.get()));
+                actualizarTotal.run();
+            } else {
+                Toast.makeText(getApplicationContext(), "Cantidad máxima de tamales alcanzada", Toast.LENGTH_SHORT).show();
+            }
         });
         restarTamal.setOnClickListener(v -> {
             if (totalTamales.get() > 0) {
                 totalTamales.getAndDecrement();
                 cantidadTamal.setText(String.valueOf(totalTamales.get()));
+                actualizarTotal.run();
             }
         });
 
         sumarBurrito.setOnClickListener(v -> {
-            totalBurritos.getAndIncrement();
-            cantidadBurrito.setText(String.valueOf(totalBurritos.get()));
+            if (totalBurritos.get() < 10) {
+                totalBurritos.getAndIncrement();
+                cantidadBurrito.setText(String.valueOf(totalBurritos.get()));
+                actualizarTotal.run();
+            } else {
+                Toast.makeText(getApplicationContext(), "Cantidad máxima de burritos alcanzada", Toast.LENGTH_SHORT).show();
+            }
         });
         restarBurrito.setOnClickListener(v -> {
             if (totalBurritos.get() > 0) {
                 totalBurritos.getAndDecrement();
                 cantidadBurrito.setText(String.valueOf(totalBurritos.get()));
+                actualizarTotal.run();
             }
         });
 
-        double total = (totalTacos.get() * precioTacos) +
-                (totalNachos.get() * precioNachos) +
-                (totalQuesadillas.get() * precioQuesadillas) +
-                (totalTamales.get() * precioTamales) +
-                (totalBurritos.get() * precioBurritos);
 
-        precio.setText((int) total);
+        actualizarTotal.run();
 
-        // Calcular total a pagar
+        // Envía el total a la APP-Escritorio al pulsar
+        Api api = RetrofitClient.getInstance().getApi();
         pagar.setOnClickListener(v -> {
+            double totalPedido = totalActual.get();
 
+            Pedido nuevoPedido = new Pedido(totalPedido);
 
-            Toast.makeText(getApplicationContext(), "Pago realizado. Total a pagar "+ total, Toast.LENGTH_SHORT).show();
+            Call<Pedido> call = api.guardarPedido(nuevoPedido);
+
+            call.enqueue(new Callback<Pedido>() {
+                @Override
+                public void onResponse(Call<Pedido> call, Response<Pedido> response) {
+                    if (response.isSuccessful()) {
+                        System.out.println("Pedido guardado en APP-Escritorio");
+                    } else {
+                        System.out.println("Error al guardar pedido: " + response.code());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Pedido> call, Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            });
+
+            Toast.makeText(getApplicationContext(), "Pedido realizado por " + totalPedido + " €", Toast.LENGTH_SHORT).show();
 
             Intent intent = new Intent(Carta.this, EleccionMesa.class);
             startActivity(intent);
