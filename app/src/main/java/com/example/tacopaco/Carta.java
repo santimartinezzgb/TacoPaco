@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,6 +47,8 @@ public class Carta extends AppCompatActivity {
         double precioQuesadillas = 6.50;
         double precioTamales = 7.50;
         double precioBurritos = 9.99;
+
+        @SuppressLint({"MissingInflatedId", "LocalSuppress"}) TextView precio = findViewById(R.id.precio);
 
         // Botones de sumar y restar productos
         Button sumarTacos = findViewById(R.id.sumarTacos);
@@ -130,13 +133,19 @@ public class Carta extends AppCompatActivity {
             }
         });
 
+        double total = (totalTacos.get() * precioTacos) +
+                (totalNachos.get() * precioNachos) +
+                (totalQuesadillas.get() * precioQuesadillas) +
+                (totalTamales.get() * precioTamales) +
+                (totalBurritos.get() * precioBurritos);
+
+        precio.setText((int) total);
+
         // Calcular total a pagar
         pagar.setOnClickListener(v -> {
-            double total = (totalTacos.get() * precioTacos) +
-                    (totalNachos.get() * precioNachos) +
-                    (totalQuesadillas.get() * precioQuesadillas) +
-                    (totalTamales.get() * precioTamales) +
-                    (totalBurritos.get() * precioBurritos);
+
+
+            Toast.makeText(getApplicationContext(), "Pago realizado. Total a pagar "+ total, Toast.LENGTH_SHORT).show();
 
             Intent intent = new Intent(Carta.this, EleccionMesa.class);
             startActivity(intent);
