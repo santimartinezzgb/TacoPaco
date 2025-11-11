@@ -40,6 +40,8 @@ public class Carta extends AppCompatActivity {
             startActivity(intent);
         });
 
+
+
         Button pagar = findViewById(R.id.pagar);
         Button cancelar = findViewById(id.cancelar);
 
@@ -98,7 +100,7 @@ public class Carta extends AppCompatActivity {
             precio.setText(String.format("Precio: " + total +"€"));
         };
 
-        // Eventos sumar/restar productos
+        // Tacos
         sumarTacos.setOnClickListener(v -> {
             if (totalTacos.get() < 10) {
                 totalTacos.getAndIncrement();
@@ -116,6 +118,7 @@ public class Carta extends AppCompatActivity {
             }
         });
 
+        // Nachos
         sumarNachos.setOnClickListener(v -> {
             if (totalNachos.get() < 10) {
                 totalNachos.getAndIncrement();
@@ -133,6 +136,7 @@ public class Carta extends AppCompatActivity {
             }
         });
 
+        // Quesadillas
         sumarQuesadillas.setOnClickListener(v -> {
             if (totalQuesadillas.get() < 10) {
                 totalQuesadillas.getAndIncrement();
@@ -150,6 +154,7 @@ public class Carta extends AppCompatActivity {
             }
         });
 
+        // Tamales
         sumarTamal.setOnClickListener(v -> {
             if (totalTamales.get() < 10) {
                 totalTamales.getAndIncrement();
@@ -167,6 +172,7 @@ public class Carta extends AppCompatActivity {
             }
         });
 
+        // Burritos
         sumarBurrito.setOnClickListener(v -> {
             if (totalBurritos.get() < 10) {
                 totalBurritos.getAndIncrement();
@@ -184,18 +190,23 @@ public class Carta extends AppCompatActivity {
             }
         });
 
-
+        // Actualiza el total al iniciar la actividad
         actualizarTotal.run();
 
         // Envía el total a la APP-Escritorio al pulsar
         Api api = RetrofitClient.getInstance().getApi();
         pagar.setOnClickListener(v -> {
+
+            // Obtener el total actual
             double totalPedido = totalActual.get();
 
-            Pedido nuevoPedido = new Pedido(totalPedido);
+            // Crear un nuevo pedido con el total
+            Pedido nuevoPedido = new Pedido(totalPedido, null);
 
+            // Enviar el pedido a la API
             Call<Pedido> call = api.guardarPedido(nuevoPedido);
 
+            // Manejar la respuesta de la API
             call.enqueue(new Callback<Pedido>() {
                 @Override
                 public void onResponse(Call<Pedido> call, Response<Pedido> response) {
