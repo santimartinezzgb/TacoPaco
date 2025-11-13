@@ -1,4 +1,4 @@
-package com.example.tacopaco;
+package com.example.tacopaco.clases;
 
 public class Mesa {
     private String nombre;

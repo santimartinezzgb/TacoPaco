@@ -12,13 +12,16 @@
 
     <ImageView
         android:id="@+id/panelBlancoCarta"
-        android:layout_width="wrap_content"
-        android:layout_height="110dp"
+        android:layout_width="411dp"
+        android:layout_height="133dp"
         android:outlineSpotShadowColor="@color/black"
         app:srcCompat="@mipmap/img"
         tools:ignore="MissingConstraints"
         tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="-4dp" />
+        tools:layout_editor_absoluteY="-5dp" />
+
+
+    <!-- Burrito -->
 
     <TextView
         android:layout_width="211dp"
@@ -33,21 +36,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteY="-17dp" />
+        tools:layout_editor_absoluteY="-5dp" />
 
     <Button
         android:id="@+id/volver"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:layout_marginStart="34dp"
-        android:layout_marginTop="36dp"
+        android:layout_width="20dp"
+        android:layout_height="21dp"
+        android:layout_marginStart="56dp"
+        android:layout_marginTop="60dp"
         android:background="@mipmap/volver"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />
 
-
-    <!-- Burrito -->
     <LinearLayout
         android:id="@+id/tacos"
         android:layout_width="408dp"

@@ -1,9 +1,11 @@
-package com.example.tacopaco;
+// language: java
+package com.example.tacopaco.activities;
 
 import static com.example.tacopaco.R.*;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,6 +16,12 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.tacopaco.R;
+import com.example.tacopaco.clases.Mesa;
+import com.example.tacopaco.clases.Pedido;
+import com.example.tacopaco.servicios.Api;
+import com.example.tacopaco.servicios.RetrofitClient;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -22,6 +30,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class Carta extends AppCompatActivity {
+
+    private static final String TAG = "Carta";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +50,10 @@ public class Carta extends AppCompatActivity {
             startActivity(intent);
         });
 
-
-
         Button pagar = findViewById(R.id.pagar);
         Button cancelar = findViewById(id.cancelar);
+
+        int mesaId = getIntent().getIntExtra("mesaId", -1);
 
         // Precios unitarios de cada producto
         double precioTacos = 7.99;
@@ -88,7 +98,7 @@ public class Carta extends AppCompatActivity {
         AtomicInteger totalTamales = new AtomicInteger();
         AtomicInteger totalBurritos = new AtomicInteger();
 
-        // Función para actualizar el precio total (Runnable: interfaz para sincronizar una tarea/hilo)
+        // Función para actualizar el precio total
         AtomicReference<Double> totalActual = new AtomicReference<>(0.0);
         Runnable actualizarTotal = () -> {
             double total = (totalTacos.get() * precioTacos) +
@@ -200,39 +210,44 @@ public class Carta extends AppCompatActivity {
             // Obtener el total actual
             double totalPedido = totalActual.get();
 
-            // Crear un nuevo pedido con el total
-            Pedido nuevoPedido = new Pedido(totalPedido, null);
+            if(totalPedido > 0) {
 
-            // Enviar el pedido a la API
-            Call<Pedido> call = api.guardarPedido(nuevoPedido);
+                // Crear un nuevo pedido con el total
+                Pedido nuevoPedido = new Pedido(totalPedido, null);
+                // Enviar el pedido a la API
+                Call<Pedido> call = api.guardarPedido(nuevoPedido);
 
-            // Manejar la respuesta de la API
-            call.enqueue(new Callback<Pedido>() {
-                @Override
-                public void onResponse(Call<Pedido> call, Response<Pedido> response) {
-                    if (response.isSuccessful()) {
-                        System.out.println("Pedido guardado en APP-Escritorio");
-                    } else {
-                        System.out.println("Error al guardar pedido: " + response.code());
+                // Manejar la respuesta de la API
+                call.enqueue(new Callback<Pedido>() {
+                    @Override
+                    public void onResponse(Call<Pedido> call, Response<Pedido> response) {
+                        if (response.isSuccessful()) {
+                            System.out.println("Pedido guardado en APP-Escritorio");
+                        } else {
+                            System.out.println("Error al guardar pedido: " + response.code());
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(Call<Pedido> call, Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            });
+                    @Override
+                    public void onFailure(Call<Pedido> call, Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+                });
 
-            Toast.makeText(getApplicationContext(), "Pedido realizado por " + totalPedido + " €", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Pedido realizado por " + totalPedido + " €", Toast.LENGTH_SHORT).show();
 
-            Intent intent = new Intent(Carta.this, EleccionMesa.class);
-            startActivity(intent);
+                Intent intent = new Intent(Carta.this, EleccionMesa.class);
+                startActivity(intent);
+            } else {
+                Toast.makeText(getApplicationContext(), "Pedido descartado", Toast.LENGTH_SHORT).show();
+            }
+
         });
 
         cancelar.setOnClickListener(v -> {
-
-            Intent cancelar_y_volver = new Intent(Carta.this, EleccionMesa.class);
-            startActivity(cancelar_y_volver);
+            Toast.makeText(getApplicationContext(), "Pedido cancelado", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(Carta.this, EleccionMesa.class);
+            startActivity(intent);
         });
     }
 }

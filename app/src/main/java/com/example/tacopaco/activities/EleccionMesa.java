@@ -1,4 +1,4 @@
-package com.example.tacopaco;
+package com.example.tacopaco.activities;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -9,6 +9,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import com.example.tacopaco.R;
+import com.example.tacopaco.clases.Mesa;
+import com.example.tacopaco.servicios.Api;
+import com.example.tacopaco.servicios.RetrofitClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +73,7 @@ public class EleccionMesa extends AppCompatActivity {
                         Mesa mesa = mesas.get(i);
                         Button boton = BOTONES.get(i);
 
-                        boton.setText(mesa.getNombre());
+                        boton.setText("Mesa "+(i+1));
 
                         if (mesa.isOcupada()) {
                             boton.setBackground(getResources().getDrawable(R.drawable.mesa_ocupada));
