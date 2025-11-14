@@ -7,7 +7,7 @@ public class RetrofitClient {
 
     private static final String BASE_URL = "http://10.0.2.2:3000/"; // Para emulador Android Studio
     private static RetrofitClient instance;
-    private final Api api;
+    private static Api api = null;
 
     private RetrofitClient() {
         Retrofit retrofit = new Retrofit.Builder()
@@ -25,7 +25,7 @@ public class RetrofitClient {
         return instance;
     }
 
-    public Api getApi() {
+    public static Api getApi() {
         return api;
     }
 }

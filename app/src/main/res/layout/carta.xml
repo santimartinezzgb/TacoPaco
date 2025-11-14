@@ -38,16 +38,6 @@
         tools:ignore="MissingConstraints"
         tools:layout_editor_absoluteY="-5dp" />
 
-    <Button
-        android:id="@+id/volver"
-        android:layout_width="20dp"
-        android:layout_height="21dp"
-        android:layout_marginStart="56dp"
-        android:layout_marginTop="60dp"
-        android:background="@mipmap/volver"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints" />
 
     <LinearLayout
         android:id="@+id/tacos"

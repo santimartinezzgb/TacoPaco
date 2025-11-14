@@ -42,6 +42,8 @@ public class EleccionMesa extends AppCompatActivity {
         api = RetrofitClient.getInstance().getApi();
 
         Button boton_volver = findViewById(R.id.volver);
+        Button btn_actualizar = findViewById(R.id.actualizar);
+
         Button boton_mesa1 = findViewById(R.id.mesa1);
         Button boton_mesa2 = findViewById(R.id.mesa2);
         Button boton_mesa3 = findViewById(R.id.mesa3);
@@ -53,6 +55,8 @@ public class EleccionMesa extends AppCompatActivity {
         BOTONES.add(boton_mesa3);
         BOTONES.add(boton_mesa4);
         BOTONES.add(boton_mesa5);
+
+        btn_actualizar.setOnClickListener(v -> recreate());
 
         boton_volver.setOnClickListener(v -> {
             Intent intent = new Intent(EleccionMesa.this, MainActivity.class);
@@ -91,7 +95,7 @@ public class EleccionMesa extends AppCompatActivity {
         for (Button boton : BOTONES) {
             boton.setOnClickListener(v -> {
                 String nombreMesa = boton.getText().toString();
-                Mesa nuevaMesa = new Mesa(nombreMesa, true);
+                Mesa nuevaMesa = new Mesa(nombreMesa, true, 0.0);
 
                 api.ocuparMesa(nombreMesa, nuevaMesa).enqueue(new Callback<Mesa>() {
                     @Override

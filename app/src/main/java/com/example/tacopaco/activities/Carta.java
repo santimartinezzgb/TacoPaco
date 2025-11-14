@@ -1,5 +1,6 @@
 package com.example.tacopaco.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -17,6 +18,7 @@ import com.example.tacopaco.clases.Pedido;
 import com.example.tacopaco.servicios.Api;
 import com.example.tacopaco.servicios.RetrofitClient;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -41,8 +43,10 @@ public class Carta extends AppCompatActivity {
         Api api = RetrofitClient.getInstance().getApi();
         String nombreMesa = getIntent().getStringExtra("nombreMesa");
 
-        Button pagar = findViewById(R.id.pagar);
-        Button cancelar = findViewById(R.id.cancelar);
+        AtomicReference<Double> PEDIDO_TOTAL = new AtomicReference<>(0.0);
+
+        Button pedir = findViewById(R.id.pagar);
+        Button btn_cancelar_pagar = findViewById(R.id.cancelar);
 
         TextView precio = findViewById(R.id.precio);
 
@@ -85,7 +89,8 @@ public class Carta extends AppCompatActivity {
         AtomicInteger totalQuesadillas = new AtomicInteger();
         AtomicInteger totalTamales = new AtomicInteger();
         AtomicInteger totalBurritos = new AtomicInteger();
-        AtomicReference<Double> totalActual = new AtomicReference<>(0.0);
+        final AtomicReference<Double>[] totalActual = new AtomicReference[]{new AtomicReference<>(0.0)};
+
 
         Runnable actualizarTotal = () -> {
             double total = (totalTacos.get() * precioTacos)
@@ -93,7 +98,7 @@ public class Carta extends AppCompatActivity {
                     + (totalQuesadillas.get() * precioQuesadillas)
                     + (totalTamales.get() * precioTamales)
                     + (totalBurritos.get() * precioBurritos);
-            totalActual.set(total);
+            totalActual[0].set(total);
             precio.setText(String.format("Precio: %.2f €", total));
         };
 
@@ -190,23 +195,38 @@ public class Carta extends AppCompatActivity {
 
         actualizarTotal.run();
         // PAGAR
-        pagar.setOnClickListener(v -> {
+        pedir.setOnClickListener(v -> {
 
-            double totalPedido = totalActual.get();
+            double totalPedido = totalActual[0].get();
+            PEDIDO_TOTAL.updateAndGet(v1 -> new Double((double) (v1 + totalPedido)));
 
             if (totalPedido > 0) {
-                Mesa mesaActual = new Mesa(nombreMesa, true);
+                Mesa mesaActual = new Mesa(nombreMesa, true, totalPedido);
                 Pedido nuevoPedido = new Pedido(totalPedido, mesaActual);
 
                 api.guardarPedido(nuevoPedido).enqueue(new Callback<Pedido>() {
+                    @SuppressLint("SetTextI18n")
                     @Override
                     public void onResponse(Call<Pedido> call, Response<Pedido> response) {
                         if (response.isSuccessful()) {
                             Toast.makeText(getApplicationContext(), "Pedido realizado, valor: " + totalPedido + " €", Toast.LENGTH_SHORT).show();
 
                         }
-                        Intent intent = new Intent(Carta.this, EleccionMesa.class);
-                        startActivity(intent);
+                        precio.setText("0 €");
+                        totalBurritos.set(0);
+                        cantidadBurrito.setText("0");
+                        totalNachos.set(0);
+                        cantidadNachos.setText("0");
+                        totalQuesadillas.set(0);
+                        cantidadQuesadillas.setText("0");
+                        totalTacos.set(0);
+                        cantidadTacos.setText("0");
+                        totalTamales.set(0);
+                        cantidadTamal.setText("0");
+
+                        btn_cancelar_pagar.setText("PAGAR");
+                        btn_cancelar_pagar.setBackgroundColor(getResources().getColor(R.color.blue));
+                        btn_cancelar_pagar.setTextColor(getResources().getColor(R.color.white));
                     }
 
                     @Override
@@ -219,27 +239,52 @@ public class Carta extends AppCompatActivity {
             }
         });
 
-        cancelar.setOnClickListener(v -> {
 
-            if (nombreMesa != null) {
-                Mesa mesaLibre = new Mesa(nombreMesa, false);
-                api.ocuparMesa(nombreMesa, mesaLibre).enqueue(new Callback<Mesa>() {
+        btn_cancelar_pagar.setOnClickListener(v -> {
+            String texto = btn_cancelar_pagar.getText().toString().trim();
+            if ("PAGAR".equals(texto)) {
+                // Acción cuando el botón está en modo PAGAR
+                Call<List<Pedido>> call = api.getPedidos(); // usar la instancia 'api' ya creada
+                call.enqueue(new Callback<List<Pedido>>() {
                     @Override
-                    public void onResponse(Call<Mesa> call, Response<Mesa> response) {
+                    public void onResponse(Call<List<Pedido>> call, Response<List<Pedido>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            List<Pedido> pedidos = response.body();
+                            // manejar pedidos si hace falta
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<Mesa> call, Throwable t) {
-                        Toast.makeText(getApplicationContext(), "Fallo de conexión", Toast.LENGTH_SHORT).show();
+                    public void onFailure(Call<List<Pedido>> call, Throwable t) {
                         t.printStackTrace();
                     }
                 });
-            }
 
-            Toast.makeText(getApplicationContext(), "Pedido cancelado", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(Carta.this, EleccionMesa.class);
-            startActivity(intent);
+                Toast.makeText(getApplicationContext(), "Pago realizado:" + PEDIDO_TOTAL + " €", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(Carta.this, EleccionMesa.class));
+            } else {
+                // Acción cuando el botón está en modo CANCELAR (u otro)
+                if (nombreMesa != null) {
+                    Mesa mesaLibre = new Mesa(nombreMesa, false, 0.0);
+                    api.ocuparMesa(nombreMesa, mesaLibre).enqueue(new Callback<Mesa>() {
+                        @Override
+                        public void onResponse(Call<Mesa> call, Response<Mesa> response) { }
+
+                        @Override
+                        public void onFailure(Call<Mesa> call, Throwable t) {
+                            Toast.makeText(getApplicationContext(), "Fallo de conexión", Toast.LENGTH_SHORT).show();
+                            t.printStackTrace();
+                        }
+                    });
+                }
+
+                Toast.makeText(getApplicationContext(), "Pedido cancelado", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(Carta.this, EleccionMesa.class));
+            }
         });
+
+        
+        
 
     }
 }

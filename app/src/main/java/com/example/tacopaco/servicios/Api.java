@@ -13,7 +13,8 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface Api {
-
+    @GET("pedidos")
+    Call<List<Pedido>> getPedidos();
     @GET("mesas")
     Call<List<Mesa>> getMesas();
 
