@@ -2,7 +2,6 @@ package com.example.tacopaco.servicios;
 
 import com.example.tacopaco.clases.Mesa;
 import com.example.tacopaco.clases.Pedido;
-
 import java.util.List;
 
 import retrofit2.Call;
@@ -17,6 +16,7 @@ public interface Api {
 
     @GET("mesas")
     Call<List<Mesa>> getMesas();
+
     @Headers("Content-Type: application/json")
     @PUT("mesas/{nombre}")
     Call<Mesa> ocuparMesa(
@@ -27,8 +27,4 @@ public interface Api {
     @Headers("Content-Type: application/json")
     @POST("pedidos")
     Call<Pedido> guardarPedido(@Body Pedido pedido);
-
-    @PUT("mesas/{id}")
-    Call<Mesa> actualizarMesa(@Path("id") int id, @Body Mesa mesa);
-
 }

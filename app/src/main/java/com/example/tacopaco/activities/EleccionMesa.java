@@ -39,10 +39,8 @@ public class EleccionMesa extends AppCompatActivity {
             return insets;
         });
 
-        // Inicializar API
         api = RetrofitClient.getInstance().getApi();
 
-        // Obtener ids de los botones del xml
         Button boton_volver = findViewById(R.id.volver);
         Button boton_mesa1 = findViewById(R.id.mesa1);
         Button boton_mesa2 = findViewById(R.id.mesa2);
@@ -61,8 +59,8 @@ public class EleccionMesa extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Obtener mesas del backend
         Call<List<Mesa>> call = api.getMesas();
-
         call.enqueue(new Callback<List<Mesa>>() {
             @Override
             public void onResponse(Call<List<Mesa>> call, Response<List<Mesa>> response) {
@@ -72,16 +70,14 @@ public class EleccionMesa extends AppCompatActivity {
                     for (int i = 0; i < mesas.size() && i < BOTONES.size(); i++) {
                         Mesa mesa = mesas.get(i);
                         Button boton = BOTONES.get(i);
-
-                        boton.setText("Mesa "+(i+1));
+                        boton.setText(mesa.getNombre());
 
                         if (mesa.isOcupada()) {
                             boton.setBackground(getResources().getDrawable(R.drawable.mesa_ocupada));
                             boton.setTextColor(getResources().getColor(R.color.white));
+                            boton.setEnabled(false);
                         }
                     }
-                } else {
-                    System.out.println("Error al obtener mesas: " + response.code());
                 }
             }
 
@@ -91,21 +87,19 @@ public class EleccionMesa extends AppCompatActivity {
             }
         });
 
+        // Marcar mesa ocupada al pulsar
         for (Button boton : BOTONES) {
             boton.setOnClickListener(v -> {
                 String nombreMesa = boton.getText().toString();
-
                 Mesa nuevaMesa = new Mesa(nombreMesa, true);
 
-                Call<Mesa> call2 = api.ocuparMesa(nombreMesa, nuevaMesa);
-
-                call2.enqueue(new Callback<Mesa>() {
+                api.ocuparMesa(nombreMesa, nuevaMesa).enqueue(new Callback<Mesa>() {
                     @Override
                     public void onResponse(Call<Mesa> call, Response<Mesa> response) {
                         if (response.isSuccessful()) {
-                            System.out.println("Mesa ocupada correctamente");
-                        } else {
-                            System.out.println("Error al ocupar la mesa: " + response.code());
+                            Intent intent = new Intent(EleccionMesa.this, Carta.class);
+                            intent.putExtra("nombreMesa", nombreMesa);
+                            startActivity(intent);
                         }
                     }
 
@@ -114,11 +108,9 @@ public class EleccionMesa extends AppCompatActivity {
                         t.printStackTrace();
                     }
                 });
-
-                Intent intent = new Intent(EleccionMesa.this, Carta.class);
-                startActivity(intent);
             });
         }
+
     }
 
 }

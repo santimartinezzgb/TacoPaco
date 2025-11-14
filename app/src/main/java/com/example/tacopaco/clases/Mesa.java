@@ -17,7 +17,4 @@ public class Mesa {
         return ocupada;
     }
 
-    public void setOcupada(boolean ocupada) {
-        this.ocupada = ocupada;
-    }
 }

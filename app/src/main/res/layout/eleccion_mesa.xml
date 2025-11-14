@@ -23,6 +23,15 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="MissingConstraints" />
 
+    <Button
+        android:id="@+id/actualizar"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@mipmap/volver"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="180dp"
+        tools:layout_editor_absoluteY="78dp" />
+
     <TextView
         android:layout_width="338dp"
         android:layout_height="70dp"

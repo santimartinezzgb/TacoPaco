@@ -1,15 +1,10 @@
-// language: java
 package com.example.tacopaco.activities;
-
-import static com.example.tacopaco.R.*;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -31,38 +26,32 @@ import retrofit2.Response;
 
 public class Carta extends AppCompatActivity {
 
-    private static final String TAG = "Carta";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.carta);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.carta), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
 
-        Button tacos = findViewById(R.id.volver);
-        tacos.setOnClickListener(v -> {
-            Intent intent = new Intent(Carta.this, EleccionMesa.class);
-            startActivity(intent);
-        });
+        Api api = RetrofitClient.getInstance().getApi();
+        String nombreMesa = getIntent().getStringExtra("nombreMesa");
 
         Button pagar = findViewById(R.id.pagar);
-        Button cancelar = findViewById(id.cancelar);
+        Button cancelar = findViewById(R.id.cancelar);
 
-        int mesaId = getIntent().getIntExtra("mesaId", -1);
+        TextView precio = findViewById(R.id.precio);
 
-        // Precios unitarios de cada producto
         double precioTacos = 7.99;
         double precioNachos = 6.99;
         double precioQuesadillas = 6.50;
         double precioTamales = 7.50;
         double precioBurritos = 9.99;
 
-        TextView precio = findViewById(R.id.precio);
 
         // Botones de sumar y restar productos
         Button sumarTacos = findViewById(R.id.sumarTacos);
@@ -71,11 +60,11 @@ public class Carta extends AppCompatActivity {
         Button sumarTamal = findViewById(R.id.sumarTamal);
         Button sumarBurrito = findViewById(R.id.sumarBurrito);
 
-        Button restarTacos = findViewById(id.restarTacos);
-        Button restarNachos = findViewById(id.restarNachos);
-        Button restarQuesadillas = findViewById(id.restarQuesadillas);
-        Button restarTamal = findViewById(id.restarTamal);
-        Button restarBurrito = findViewById(id.restarBurrito);
+        Button restarTacos = findViewById(R.id.restarTacos);
+        Button restarNachos = findViewById(R.id.restarNachos);
+        Button restarQuesadillas = findViewById(R.id.restarQuesadillas);
+        Button restarTamal = findViewById(R.id.restarTamal);
+        Button restarBurrito = findViewById(R.id.restarBurrito);
 
         // Cantidad productos
         TextView cantidadTacos = findViewById(R.id.cantidadTacos);
@@ -91,23 +80,21 @@ public class Carta extends AppCompatActivity {
         cantidadTamal.setText("0");
         cantidadBurrito.setText("0");
 
-        // Cantidades
         AtomicInteger totalTacos = new AtomicInteger();
         AtomicInteger totalNachos = new AtomicInteger();
         AtomicInteger totalQuesadillas = new AtomicInteger();
         AtomicInteger totalTamales = new AtomicInteger();
         AtomicInteger totalBurritos = new AtomicInteger();
-
-        // Función para actualizar el precio total
         AtomicReference<Double> totalActual = new AtomicReference<>(0.0);
+
         Runnable actualizarTotal = () -> {
-            double total = (totalTacos.get() * precioTacos) +
-                    (totalNachos.get() * precioNachos) +
-                    (totalQuesadillas.get() * precioQuesadillas) +
-                    (totalTamales.get() * precioTamales) +
-                    (totalBurritos.get() * precioBurritos);
+            double total = (totalTacos.get() * precioTacos)
+                    + (totalNachos.get() * precioNachos)
+                    + (totalQuesadillas.get() * precioQuesadillas)
+                    + (totalTamales.get() * precioTamales)
+                    + (totalBurritos.get() * precioBurritos);
             totalActual.set(total);
-            precio.setText(String.format("Precio: " + total +"€"));
+            precio.setText(String.format("Precio: %.2f €", total));
         };
 
         // Tacos
@@ -200,54 +187,59 @@ public class Carta extends AppCompatActivity {
             }
         });
 
-        // Actualiza el total al iniciar la actividad
-        actualizarTotal.run();
 
-        // Envía el total a la APP-Escritorio al pulsar
-        Api api = RetrofitClient.getInstance().getApi();
+        actualizarTotal.run();
+        // PAGAR
         pagar.setOnClickListener(v -> {
 
-            // Obtener el total actual
             double totalPedido = totalActual.get();
 
-            if(totalPedido > 0) {
+            if (totalPedido > 0) {
+                Mesa mesaActual = new Mesa(nombreMesa, true);
+                Pedido nuevoPedido = new Pedido(totalPedido, mesaActual);
 
-                // Crear un nuevo pedido con el total
-                Pedido nuevoPedido = new Pedido(totalPedido, null);
-                // Enviar el pedido a la API
-                Call<Pedido> call = api.guardarPedido(nuevoPedido);
-
-                // Manejar la respuesta de la API
-                call.enqueue(new Callback<Pedido>() {
+                api.guardarPedido(nuevoPedido).enqueue(new Callback<Pedido>() {
                     @Override
                     public void onResponse(Call<Pedido> call, Response<Pedido> response) {
                         if (response.isSuccessful()) {
-                            System.out.println("Pedido guardado en APP-Escritorio");
-                        } else {
-                            System.out.println("Error al guardar pedido: " + response.code());
+                            Toast.makeText(getApplicationContext(), "Pedido realizado, valor: " + totalPedido + " €", Toast.LENGTH_SHORT).show();
+
                         }
+                        Intent intent = new Intent(Carta.this, EleccionMesa.class);
+                        startActivity(intent);
                     }
 
                     @Override
-                    public void onFailure(Call<Pedido> call, Throwable throwable) {
-                        throwable.printStackTrace();
+                    public void onFailure(Call<Pedido> call, Throwable t) {
+                        t.printStackTrace();
                     }
                 });
-
-                Toast.makeText(getApplicationContext(), "Pedido realizado por " + totalPedido + " €", Toast.LENGTH_SHORT).show();
-
-                Intent intent = new Intent(Carta.this, EleccionMesa.class);
-                startActivity(intent);
             } else {
-                Toast.makeText(getApplicationContext(), "Pedido descartado", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Pedido vacío", Toast.LENGTH_SHORT).show();
             }
-
         });
 
         cancelar.setOnClickListener(v -> {
+
+            if (nombreMesa != null) {
+                Mesa mesaLibre = new Mesa(nombreMesa, false);
+                api.ocuparMesa(nombreMesa, mesaLibre).enqueue(new Callback<Mesa>() {
+                    @Override
+                    public void onResponse(Call<Mesa> call, Response<Mesa> response) {
+                    }
+
+                    @Override
+                    public void onFailure(Call<Mesa> call, Throwable t) {
+                        Toast.makeText(getApplicationContext(), "Fallo de conexión", Toast.LENGTH_SHORT).show();
+                        t.printStackTrace();
+                    }
+                });
+            }
+
             Toast.makeText(getApplicationContext(), "Pedido cancelado", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(Carta.this, EleccionMesa.class);
             startActivity(intent);
         });
+
     }
 }
