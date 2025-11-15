@@ -40,16 +40,23 @@ public class Carta extends AppCompatActivity {
             return insets;
         });
 
+        // Obtener instancia de la API
         Api api = RetrofitClient.getInstance().getApi();
+
+        // Obtener la mesa seleccionada
         String nombreMesa = getIntent().getStringExtra("nombreMesa");
 
-        AtomicReference<Double> PEDIDO_TOTAL = new AtomicReference<>(0.0);
+        // Acumulador del total de la mesa, inicializado a 0; este se mantiene mientras el cliente está viendo la carta
+        AtomicReference<Double> acumuladoMesa = new AtomicReference<>(0.0);
 
+        // Botones de pedir y cancelar/pagar
         Button pedir = findViewById(R.id.pagar);
         Button btn_cancelar_pagar = findViewById(R.id.cancelar);
 
+        // Texto del precio total
         TextView precio = findViewById(R.id.precio);
 
+        // Precios de los productos
         double precioTacos = 7.99;
         double precioNachos = 6.99;
         double precioQuesadillas = 6.50;
@@ -84,14 +91,25 @@ public class Carta extends AppCompatActivity {
         cantidadTamal.setText("0");
         cantidadBurrito.setText("0");
 
+        // Variables atómicas para las cantidades de cada producto
         AtomicInteger totalTacos = new AtomicInteger();
         AtomicInteger totalNachos = new AtomicInteger();
         AtomicInteger totalQuesadillas = new AtomicInteger();
         AtomicInteger totalTamales = new AtomicInteger();
         AtomicInteger totalBurritos = new AtomicInteger();
+
+        /*
+        * Variable atómica: Clase que permite manejar
+        * variables entre varios hilos sin usar synchronized.
+        *
+        * El incremento es .getAndIncrement() y el decremento es .getAndDecrement()
+        * */
+
+        // Variable atómica para el total actual del pedido
         final AtomicReference<Double>[] totalActual = new AtomicReference[]{new AtomicReference<>(0.0)};
 
-
+        // Runnable para actualizar el total del pedido
+        // Runnable: Sirve para definir un bloque de código que se puede ejecutar en cualquier momento.
         Runnable actualizarTotal = () -> {
             double total = (totalTacos.get() * precioTacos)
                     + (totalNachos.get() * precioNachos)
@@ -192,80 +210,118 @@ public class Carta extends AppCompatActivity {
             }
         });
 
-
+        // Cargar el total del pedido
         actualizarTotal.run();
-        // PAGAR
+
+        // PULSAR PEDIR: añadir el total al acumulado de la mesa
         pedir.setOnClickListener(v -> {
-
             double totalPedido = totalActual[0].get();
-            PEDIDO_TOTAL.updateAndGet(v1 -> new Double((double) (v1 + totalPedido)));
 
+            // Si el pedido no está vacío
             if (totalPedido > 0) {
-                Mesa mesaActual = new Mesa(nombreMesa, true, totalPedido);
-                Pedido nuevoPedido = new Pedido(totalPedido, mesaActual);
+                // Actualizar el acumulado de la mesa
+                acumuladoMesa.updateAndGet(v1 -> v1 + totalPedido);
 
-                api.guardarPedido(nuevoPedido).enqueue(new Callback<Pedido>() {
-                    @SuppressLint("SetTextI18n")
-                    @Override
-                    public void onResponse(Call<Pedido> call, Response<Pedido> response) {
-                        if (response.isSuccessful()) {
-                            Toast.makeText(getApplicationContext(), "Pedido realizado, valor: " + totalPedido + " €", Toast.LENGTH_SHORT).show();
+                // Mensaje de confirmación
+                Toast.makeText(getApplicationContext(),
+                        "Pedido añadido. Subtotal mesa: " + String.format("%.2f", acumuladoMesa.get()) + " €",
+                        Toast.LENGTH_SHORT).show();
 
-                        }
-                        precio.setText("0 €");
-                        totalBurritos.set(0);
-                        cantidadBurrito.setText("0");
-                        totalNachos.set(0);
-                        cantidadNachos.setText("0");
-                        totalQuesadillas.set(0);
-                        cantidadQuesadillas.setText("0");
-                        totalTacos.set(0);
-                        cantidadTacos.setText("0");
-                        totalTamales.set(0);
-                        cantidadTamal.setText("0");
+                // Limpiar cantidades en UI
+                precio.setText("0 €");
+                totalBurritos.set(0);
+                cantidadBurrito.setText("0");
+                totalNachos.set(0);
+                cantidadNachos.setText("0");
+                totalQuesadillas.set(0);
+                cantidadQuesadillas.setText("0");
+                totalTacos.set(0);
+                cantidadTacos.setText("0");
+                totalTamales.set(0);
+                cantidadTamal.setText("0");
+                totalActual[0].set(0.0);
 
-                        btn_cancelar_pagar.setText("PAGAR");
-                        btn_cancelar_pagar.setBackgroundColor(getResources().getColor(R.color.blue));
-                        btn_cancelar_pagar.setTextColor(getResources().getColor(R.color.white));
-                    }
+                // Cambiar el botón de CANCELAR a PAGAR
+                btn_cancelar_pagar.setText("PAGAR");
+                btn_cancelar_pagar.setBackgroundColor(getResources().getColor(R.color.blue));
+                btn_cancelar_pagar.setTextColor(getResources().getColor(R.color.white));
 
-                    @Override
-                    public void onFailure(Call<Pedido> call, Throwable t) {
-                        t.printStackTrace();
-                    }
-                });
-            } else {
+            } else { // Pedido vacío
                 Toast.makeText(getApplicationContext(), "Pedido vacío", Toast.LENGTH_SHORT).show();
             }
         });
 
-
+        // PULSAR CANCELAR/PAGAR
         btn_cancelar_pagar.setOnClickListener(v -> {
+
+            // Ver si el botón está en modo PAGAR o CANCELAR
             String texto = btn_cancelar_pagar.getText().toString().trim();
+
+            // PAGAR: crear pedido, guardar en API
             if ("PAGAR".equals(texto)) {
-                // Acción cuando el botón está en modo PAGAR
-                Call<List<Pedido>> call = api.getPedidos(); // usar la instancia 'api' ya creada
-                call.enqueue(new Callback<List<Pedido>>() {
-                    @Override
-                    public void onResponse(Call<List<Pedido>> call, Response<List<Pedido>> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            List<Pedido> pedidos = response.body();
-                            // manejar pedidos si hace falta
+                double totalComanda = acumuladoMesa.get();
+
+                // Si hay algo que pagar
+                if (totalComanda > 0) {
+                    Mesa mesaActual = new Mesa(nombreMesa, true, true);
+                    api.ocuparMesa(nombreMesa, mesaActual).enqueue(new Callback<Mesa>() {
+                        @Override
+                        public void onResponse(Call<Mesa> call, Response<Mesa> response) {
+                            System.out.println("Mesa marcada como a pagar");
                         }
-                    }
 
-                    @Override
-                    public void onFailure(Call<List<Pedido>> call, Throwable t) {
-                        t.printStackTrace();
-                    }
-                });
+                        @Override
+                        public void onFailure(Call<Mesa> call, Throwable t) {
+                            t.printStackTrace();
+                        }
+                    });
+                    Pedido pedidoFinal = new Pedido(totalComanda, mesaActual);
 
-                Toast.makeText(getApplicationContext(), "Pago realizado:" + PEDIDO_TOTAL + " €", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(Carta.this, EleccionMesa.class));
+                    // Guardar el pedido en la API
+                    api.guardarPedido(pedidoFinal).enqueue(new Callback<Pedido>() {
+                        @Override
+                        public void onResponse(Call<Pedido> call, Response<Pedido> response) {
+                            if (response.isSuccessful()) {
+                                Toast.makeText(getApplicationContext(),
+                                        "Pago realizado: " + String.format("%.2f", totalComanda) + " €",
+                                        Toast.LENGTH_SHORT).show();
+
+                                // // Liberar la mesa después del pago
+                                // if (nombreMesa != null) {
+                                //     Mesa mesaLibre = new Mesa(nombreMesa, false, 0.0);
+                                //     api.ocuparMesa(nombreMesa, mesaLibre).enqueue(new Callback<Mesa>() {
+                                //         @Override
+                                //         public void onResponse(Call<Mesa> call, Response<Mesa> response) { }
+//
+                                //         @Override
+                                //         public void onFailure(Call<Mesa> call, Throwable t) {
+                                //             t.printStackTrace();
+                                //         }
+                                //     });
+                                // }
+
+                                // Resetea el acumulador y vuelve a la elección de mesa
+                                acumuladoMesa.set(0.0);
+                                startActivity(new Intent(Carta.this, EleccionMesa.class));
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Error al procesar el pago", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<Pedido> call, Throwable t) {
+                            t.printStackTrace();
+                        }
+                    });
+                } else {
+                    Toast.makeText(getApplicationContext(), "No hay pedidos para pagar", Toast.LENGTH_SHORT).show();
+                }
             } else {
-                // Acción cuando el botón está en modo CANCELAR (u otro)
+                // CANCELAR: liberar mesa y resetear acumulador
                 if (nombreMesa != null) {
-                    Mesa mesaLibre = new Mesa(nombreMesa, false, 0.0);
+                    Mesa mesaLibre = new Mesa(nombreMesa, false, false);
+
+                    // Liberar la mesa en la API
                     api.ocuparMesa(nombreMesa, mesaLibre).enqueue(new Callback<Mesa>() {
                         @Override
                         public void onResponse(Call<Mesa> call, Response<Mesa> response) { }
@@ -278,13 +334,15 @@ public class Carta extends AppCompatActivity {
                     });
                 }
 
+                // Resetea el acumulador y vuelve a elección de mesa
+                acumuladoMesa.set(0.0);
                 Toast.makeText(getApplicationContext(), "Pedido cancelado", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(Carta.this, EleccionMesa.class));
             }
         });
 
-        
-        
+
+
 
     }
 }

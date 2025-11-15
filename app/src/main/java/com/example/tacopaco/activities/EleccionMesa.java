@@ -23,8 +23,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class EleccionMesa extends AppCompatActivity {
-    ArrayList<Button> BOTONES = new ArrayList<>();
-    Api api;
 
     @SuppressLint("UseCompatLoadingForDrawables")
     @Override
@@ -39,11 +37,25 @@ public class EleccionMesa extends AppCompatActivity {
             return insets;
         });
 
-        api = RetrofitClient.getInstance().getApi();
+        // Instancia de la API
+        Api api = RetrofitClient.getInstance().getApi();
 
+
+        // Referencias a los botones del xml
         Button boton_volver = findViewById(R.id.volver);
         Button btn_actualizar = findViewById(R.id.actualizar);
 
+        // Actualizar el activity
+        btn_actualizar.setOnClickListener(v -> recreate());
+
+        // Volver al activity anterior
+        boton_volver.setOnClickListener(v -> {
+            Intent intent = new Intent(EleccionMesa.this, MainActivity.class);
+            startActivity(intent);
+        });
+
+        // Lista de botones de mesas
+        ArrayList<Button> BOTONES = new ArrayList<>();
         Button boton_mesa1 = findViewById(R.id.mesa1);
         Button boton_mesa2 = findViewById(R.id.mesa2);
         Button boton_mesa3 = findViewById(R.id.mesa3);
@@ -56,16 +68,11 @@ public class EleccionMesa extends AppCompatActivity {
         BOTONES.add(boton_mesa4);
         BOTONES.add(boton_mesa5);
 
-        btn_actualizar.setOnClickListener(v -> recreate());
-
-        boton_volver.setOnClickListener(v -> {
-            Intent intent = new Intent(EleccionMesa.this, MainActivity.class);
-            startActivity(intent);
-        });
-
-        // Obtener mesas del backend
+        // Obtener mesas de la base de datos de Mongo Atlas
         Call<List<Mesa>> call = api.getMesas();
-        call.enqueue(new Callback<List<Mesa>>() {
+
+        // Interfaz gráfica de los botones según el estado de las mesas
+        call.enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<List<Mesa>> call, Response<List<Mesa>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -91,12 +98,15 @@ public class EleccionMesa extends AppCompatActivity {
             }
         });
 
-        // Marcar mesa ocupada al pulsar
+
         for (Button boton : BOTONES) {
+
+            // Acción al pulsar un botón de mesa
             boton.setOnClickListener(v -> {
                 String nombreMesa = boton.getText().toString();
-                Mesa nuevaMesa = new Mesa(nombreMesa, true, 0.0);
+                Mesa nuevaMesa = new Mesa(nombreMesa, true, false);
 
+                // Actualizar el estado de la mesa en la base de datos
                 api.ocuparMesa(nombreMesa, nuevaMesa).enqueue(new Callback<Mesa>() {
                     @Override
                     public void onResponse(Call<Mesa> call, Response<Mesa> response) {
